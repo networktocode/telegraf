@@ -100,6 +100,7 @@ type HTTP struct {
 	httpconfig.HTTPClientConfig
 	Log telegraf.Logger `toml:"-"`
 
+	Log        telegraf.Logger
 	client     *http.Client
 	serializer serializers.Serializer
 }
@@ -207,6 +208,10 @@ func (h *HTTP) writeMetric(reqBody []byte) error {
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode == 409 {
+		h.Log.Warnf("when writing to [%s] received status code: 409, dropping batch", h.URL)
+		return nil
+	}
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		errorLine := ""
 		scanner := bufio.NewScanner(io.LimitReader(resp.Body, maxErrMsgLen))
