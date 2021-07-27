@@ -84,6 +84,7 @@ type HTTP struct {
 	ContentEncoding string            `toml:"content_encoding"`
 	httpconfig.HTTPClientConfig
 
+	Log        telegraf.Logger
 	client     *http.Client
 	serializer serializers.Serializer
 }
@@ -174,6 +175,10 @@ func (h *HTTP) write(reqBody []byte) error {
 	defer resp.Body.Close()
 	_, err = ioutil.ReadAll(resp.Body)
 
+	if resp.StatusCode == 409 {
+		h.Log.Warnf("when writing to [%s] received status code: 409, dropping batch", h.URL)
+		return nil
+	}
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return fmt.Errorf("when writing to [%s] received status code: %d", h.URL, resp.StatusCode)
 	}
