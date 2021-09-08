@@ -196,6 +196,11 @@ func (l *Loki) write(s Streams) error {
 	}
 	_ = resp.Body.Close()
 
+	if resp.StatusCode == 400 {
+		fmt.Sprintf("when writing to loki received status code: 400, body %s, dropping log", resp.Body)
+		return nil
+	}
+
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return fmt.Errorf("when writing to [%s] received status code: %d", l.url, resp.StatusCode)
 	}
