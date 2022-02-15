@@ -100,7 +100,6 @@ type HTTP struct {
 	httpconfig.HTTPClientConfig
 	Log telegraf.Logger `toml:"-"`
 
-	Log        telegraf.Logger
 	client     *http.Client
 	serializer serializers.Serializer
 }
